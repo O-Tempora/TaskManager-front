@@ -1,6 +1,7 @@
 <script>
     import axios from "axios";
     import "../app.postcss";
+    import 'iconify-icon';
     import TaskModal from "./TaskModal.svelte";
     import { onMount } from "svelte";
 
@@ -35,7 +36,6 @@
                 },
             });
             const data = await resp.json();
-            console.log("Task: ", data);
 
             descr = data.description;
             startAt = data.startAt.slice(0,10);
@@ -85,13 +85,16 @@
                 <p class="font-serif font-bold italic text-base line-clamp-1 text-black underline">{task.status}</p>
             </div>
             <p class="font-serif font-medium text-lg line-clamp-6 py-1">{task.description}</p>
-            <ul class="border-2 border-transparent border-t-[#1e3d59] w-full">
-                {#each task.persons as person}
-                    <li class="py-1">
-                        {person.name}
-                    </li>
-                {/each}
-            </ul>
+            <div class="w-full flex flex-row justify-between border-2 border-transparent border-t-[#1e3d59]">
+                <ul class="w-full">
+                    {#each task.persons as person}
+                        <li class="py-1">
+                            {person.name}
+                        </li>
+                    {/each}
+                </ul>
+                <iconify-icon icon="fluent:people-team-32-filled" class="text-2xl"/>
+            </div>
         </div>
         <button on:click={() => deleteTask(task.id)} class="px-1 bg-transparent hover:bg-slate-200 invisible group-hover:visible h-min">
             <iconify-icon icon="material-symbols:delete-outline-rounded" class="text-2xl text-gray-600 mt-2"/>

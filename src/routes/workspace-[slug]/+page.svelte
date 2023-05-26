@@ -9,14 +9,18 @@
     import { currusr } from "../currusr";
     import 'iconify-icon';
     import { fly } from 'svelte/transition';
+    import { slide } from 'svelte/transition';
 
     export let data;
     
+    let showPersonDropdown = false
     let openTask = false;
+    let changeDropdown = () =>{
+        showPersonDropdown = !showPersonDropdown
+    }
     let showTask = async (event) => {
         openTask = true;
         let t = await getTask(event.detail.id)
-        console.log("Task: ", $task)
     }
     let getTask = async (id) =>{
         try{
@@ -95,6 +99,26 @@
             console.log(e);
         }
     }
+    let Assign = async (user) => {
+        try{
+            await axios.post(
+                `http://localhost:5192/person/${user.name}/assign-${$task.task.id}`
+            );
+            $task.persons = [... $task.persons, user]
+        } catch(e){
+            console.log(e);
+        }
+    }
+    let Dismiss = async (user) => {
+        try{
+            await axios.delete(
+                `http://localhost:5192/person/${user.name}/dismiss-${$task.task.id}`
+            );
+            $task.persons = $task.persons.filter(v => v.name !== user.name)
+        } catch(e){
+            console.log(e);
+        }
+    }
 </script>
 
 {#if openTask && $task != null}
@@ -153,7 +177,7 @@
                 {/if}
             </div>
             <div>
-                <div class="flex flex-row items-center w-full content-center mt-4">
+                <div class="flex flex-row w-full content-start mt-4 overflow-visible static">
                     <p class="text-white font-bold italic text-3xl">Assigned</p>
                     {#if $task.persons.findIndex(v => v.id === $workspace.user.Id) === -1
                     }
@@ -165,10 +189,19 @@
                             <iconify-icon icon="iconamoon:do-undo-fill"/>
                         </button>
                     {/if}
-                    {#if $workspace.isAdmin}
-                        <button class="text-yellow-400 text-4xl hover:bg-zinc-700 rounded-lg p-1 mx-2">
+                        {#if $workspace.isAdmin}
+                        <button class="text-yellow-400 text-4xl hover:bg-zinc-700 rounded-lg p-1 mx-2" on:click={changeDropdown}>
                             <iconify-icon icon="fluent:person-add-24-filled"/>
                         </button>
+                        {#if showPersonDropdown}
+                            <ul transition:slide  class="absolute ml-64 bg-zinc-700 px-2">
+                                {#each $persons.filter(v => $task.persons.findIndex(t => t.id === v.id) === -1) as person}
+                                    <li class="px-2 text-white text-lg hover:bg-slate-400" on:keydown on:click={() => {showPersonDropdown = false; Assign(person)}}>
+                                        {person.name}
+                                    </li>
+                                {/each}
+                            </ul>
+                        {/if}
                     {/if}
                 </div>
                 <ul class="flex flex-col">
@@ -181,7 +214,9 @@
                                     <p class="text-amber-200 text-lg">{person.name}</p>
                                 {/if}
                                 {#if $workspace.isAdmin}
-                                    <iconify-icon icon="fluent:dismiss-circle-32-regular" class="text-3xl text-red-500 hover:bg-zinc-700 rounded-lg p-1"/>
+                                    <button on:click={() => {Dismiss(person)}}>
+                                        <iconify-icon icon="fluent:dismiss-circle-32-regular" class="text-3xl text-red-500 hover:bg-zinc-700 rounded-lg p-1"/>
+                                    </button>
                                 {/if}
                             </div>
                         </li>
