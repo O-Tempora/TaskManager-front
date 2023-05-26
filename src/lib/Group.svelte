@@ -51,7 +51,6 @@
                 body: JSON.stringify(group_id)
             });
             const data = await resp.json();
-            console.log(data);
             group[i].tasks = [...group[i].tasks, data]
         } catch(e){
             console.log(e)
