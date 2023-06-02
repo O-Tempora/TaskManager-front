@@ -2,19 +2,22 @@
     import axios from "axios";
     import "../../app.postcss";
     import Group from "../../lib/Group.svelte"
+    import WorkspaceInfo from "../../lib/WorkspaceInfo.svelte";
     import { workspace } from "../workspace";
     import { task } from "../task";
     import { statuses } from "../statuses";
     import { persons } from "../persons"
-    import { currusr } from "../currusr";
     import 'iconify-icon';
     import { fly } from 'svelte/transition';
     import { slide } from 'svelte/transition';
 
-    export let data;
+    //export let data;
     
+    console.log($workspace)
+
     let showPersonDropdown = false
     let openTask = false;
+    let openInfo = false;
     let changeDropdown = () =>{
         showPersonDropdown = !showPersonDropdown
     }
@@ -24,7 +27,7 @@
     }
     let getTask = async (id) =>{
         try{
-            const resp = await fetch(`http://localhost:5192/task/${id}-${$workspace.data.id}`, {
+            const resp = await fetch(`http://localhost:5192/task/${id}-${$workspace.data.info.id}`, {
                 method: "GET",
                 headers:{
                     "Content-type": "application/json",
@@ -119,6 +122,47 @@
             console.log(e);
         }
     }
+
+    let ChangeWSStatus = async () =>{
+        let i = {...$workspace.data.info}
+        i.isActive = !$workspace.data.info.isActive
+        i.closed_at = i.isActive === true? null : new Date()
+        try{
+            await axios.put(
+                `http://localhost:5192/workspace/${$workspace.data.info.id}`,
+                i
+            );
+            $workspace.data.info.isActive = i.isActive
+            $workspace.data.info.closed_at = i.closed_at
+        } catch(e){
+            console.log(e);
+        }
+    }
+    let SaveInfo = async () =>{
+        let i = {...$workspace.data.info}
+        i.closed_at = i.isActive === true? null : new Date()
+        try{
+            await axios.put(
+                `http://localhost:5192/workspace/${$workspace.data.info.id}`,
+                i
+            );
+        } catch(e){
+            console.log(e);
+        }
+    }
+    let DeleteWS = async () =>{
+        try{
+            await axios.delete(
+                `http://localhost:5192/workspace/${$workspace.data.info.id}`,
+            );
+            window.location.replace(`http://localhost:5173`);
+        } catch(e){
+            console.log(e);
+        }
+    }
+    let closeInfo = () => {
+        openInfo = false
+    }
 </script>
 
 {#if openTask && $task != null}
@@ -166,8 +210,8 @@
             </div>
             <div class="flex flex-row w-full justify-start mt-2">
                 <p class="text-xl text-white font-bold py-2">Status:</p>
-                {#if $workspace.isAdmin}
-                    <select bind:value={$task.task.status} class="ml-4 rounded-md bg-zinc-700 text-white px-2 text-lg">
+                {#if $workspace.isAdmin}     
+                    <select bind:value={$task.task.status} class="ml-4 rounded-md bg-zinc-900 text-white px-2 text-lg">
                         {#each $statuses as status}
                             <option value={status.name}>{status.name}</option>
                         {/each}
@@ -227,12 +271,34 @@
     </div>
 {/if}
 
-<section class="flex flex-row content-center items-start h-full w-full">
-    <nav class="h-screen bg-zinc-800 border-black border-2 flex flex-col items-center min-w-[228px] max-w-[228px]">
-        <button class="layout-button flex flex-row items-center text-gray-400" on:click={() => addGroup($workspace.id)}>
-            <iconify-icon icon="ic:baseline-create-new-folder" class="text-3xl text-gray-400 mx-2"/>
+<section class="flex flex-row content-start items-start h-full w-full">
+    <nav class="h-screen bg-zinc-800 border-black border-2 flex flex-col items-start min-w-[228px] max-w-[228px]">
+        <button class="side-nav-button text-gray-400" on:click={() => addGroup($workspace.data.info.id)}>
+            <iconify-icon icon="icon-park-outline:add" class="text-3xl pr-1"/>
             <p class="text-xl">Add Group</p>
         </button>
+        <button class="side-nav-button text-gray-400" on:click={() => openInfo = !openInfo}>
+            <iconify-icon icon="ep:info-filled" class="text-3xl"/>
+            <p class="text-xl">Workspace Info</p>
+        </button>
+        {#if $workspace.isAdmin}
+            <button class="side-nav-button text-amber-400" on:click={() => ChangeWSStatus()}>
+                <iconify-icon icon="uiw:warning" class="text-2xl  px-1"/>
+                <p class="text-xl text-end ">Make {#if $workspace.data.info.isActive}
+                    Inactive
+                {:else}
+                    Active
+                {/if}</p>
+            </button>
+            <button class="side-nav-button text-red-600" on:click={() => DeleteWS()}>
+                <iconify-icon icon="material-symbols:delete-sharp" class="text-3xl text-red-600"/>
+                <p class="text-xl">Delete Workspace</p>
+            </button>
+        {/if}
     </nav>
-    <Group bind:group={$workspace.data.groups} bind:ws_id={$workspace.data.id} on:opentask={showTask}/>
+    <Group bind:group={$workspace.data.groups} bind:ws_id={$workspace.data.info.id} on:opentask={showTask}/>
 </section>
+
+{#if openInfo}
+    <WorkspaceInfo bind:info={$workspace.data.info} isAdmin={$workspace.isAdmin} on:close={closeInfo} on:save={SaveInfo}/>
+{/if}

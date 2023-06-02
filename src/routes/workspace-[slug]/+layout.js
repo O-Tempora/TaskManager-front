@@ -8,7 +8,7 @@ export async function load ({ fetch, params, url }){
     if (usr === null || ""){
         return;
     }
-    const res = await fetch(`http://localhost:5192/workspace-${params.slug}`, {
+    const res = await fetch(`http://localhost:5192/workspace/${params.slug}`, {
         method: "get",
         headers: {
             'Authorization': "Bearer " + usr,
@@ -49,7 +49,7 @@ export async function load ({ fetch, params, url }){
     jwt.set(usr);
     statuses.set(stat);
     persons.set(prsns);
-    console.log(data.groups[0])
+
 
     return {
         data: data,

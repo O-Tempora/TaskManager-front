@@ -3,11 +3,10 @@
     import "../../app.postcss";
     import 'iconify-icon';
     
-    export let data;
-    console.log(data)
+    //export let data;
 </script>
 
-<nav class="nav-bar">
+<nav class="nav-bar flex justify-center">
     <ul>
         <li class="inline-block">
             <a href="/" class="home-href">

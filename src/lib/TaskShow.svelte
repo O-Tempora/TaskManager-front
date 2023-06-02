@@ -2,8 +2,6 @@
     import axios from "axios";
     import "../app.postcss";
     import 'iconify-icon';
-    import TaskModal from "./TaskModal.svelte";
-    import { onMount } from "svelte";
 
     import { createEventDispatcher } from 'svelte';
     const dispatch = createEventDispatcher();
@@ -76,7 +74,6 @@
 
 </script>
 
-<TaskModal bind:descr bind:startAt bind:finishAt show={showTaskModal} on:close={() => close()}/>
 {#each tasks as task, i}
     <div class="flex flex-row items-start">
         <div on:keyup on:click={() => dispatch('opentask', { id: task.id,})} class="flex flex-col w-80 rounded-md border-black border-2 p-2 my-2 bg-zinc-200 hover:bg-sky-100 shadow-xl">

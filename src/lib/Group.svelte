@@ -69,12 +69,6 @@
         group[currGroup].color = color;
         showGroupModal = false;
     }
-
-    // function showTask(event){
-    //     dispatch('opentask', {
-    //         id: event.detail.id
-    //     });
-    // }
 </script>
 
 <style>
