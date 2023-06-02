@@ -41,8 +41,10 @@
             <div class="ws-div" on:keyup on:click={() => goToWs(ws.id)}>
                 <p class="py-2 px-4 line-clamp-2 text-2xl text-black font-bold font-serif">{ws.name}</p>
                 <p class="px-4 pb-2 line-clamp-4 text-base text-stone-900 break-all w-full">{ws.description}</p>
-                <p class="px-4 line-clamp-1 text-[#ff6e40] italic font-serif">Created at: {ws.createdAt.slice(0, 10)}</p>
-                <p class="py-2 px-4 line-clamp-4 text-black break-all font-extrabold text-l font-serif">Role: {ws.role}</p>
+                <div class="w-full">
+                    <p class="px-4 line-clamp-1 text-[#ff6e40] italic font-serif">Created at: {ws.createdAt.slice(0, 10)}</p>
+                    <p class="py-2 px-4 line-clamp-4 text-black break-all font-extrabold text-l font-serif">Role: {ws.role}</p>
+                </div>
             </div>
         {:else}
             <h1>You have no available workspaces</h1>

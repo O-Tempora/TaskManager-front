@@ -6,7 +6,8 @@
     import { workspace } from "../workspace";
     import { task } from "../task";
     import { statuses } from "../statuses";
-    import { persons } from "../persons"
+    import { persons } from "../persons";
+    import { comments } from "../comments";
     import 'iconify-icon';
     import { fly } from 'svelte/transition';
     import { slide } from 'svelte/transition';
@@ -18,6 +19,7 @@
     let showPersonDropdown = false
     let openTask = false;
     let openInfo = false;
+    let content = "";
     let changeDropdown = () =>{
         showPersonDropdown = !showPersonDropdown
     }
@@ -33,16 +35,26 @@
                     "Content-type": "application/json",
                 },
             });
+            const resp_cm = await fetch(`http://localhost:5192/task/${id}/comment/`, {
+                method: "GET",
+                headers:{
+                    "Content-type": "application/json",
+                },
+            });
             const data = await resp.json();
+            const cm  = await resp_cm.json();
             data.task.startAt = data.task.startAt.slice(0, 10)
             data.task.finishAt = data.task.finishAt.slice(0, 10)
             task.set(data);
+            comments.set(cm)
+
             return data;
         } catch(e){
             console.log(e)
         }
     }
     let saveTask = async () => {
+        content = "";
         let t = {... $task}; //copy object
         t.task.startAt = new Date(parseInt(t.task.startAt.slice(0, 4)), parseInt(t.task.startAt.slice(5, 7)) - 1, parseInt(t.task.startAt.slice(8)));
         t.task.finishAt = new Date(parseInt(t.task.finishAt.slice(0, 4)), parseInt(t.task.finishAt.slice(5, 7)) - 1, parseInt(t.task.finishAt.slice(8)));
@@ -163,6 +175,34 @@
     let closeInfo = () => {
         openInfo = false
     }
+
+    let writeComment = async (id) => {
+        try{
+            const res = await axios.post(
+                `http://localhost:5192/task/${id}/comment`,
+                {
+                    content: content,
+                    person_id: $workspace.user.Id,
+                    task_id: id,
+                    created_at: new Date()
+                }
+            );
+            const data = await res.data;
+            $comments = [data, ...$comments]
+        } catch(e){
+            console.log(e);
+        }
+    }
+    let deleteComment = async (id, c_id) => {
+        try{
+            await axios.delete(
+                `http://localhost:5192/task/${id}/comment/${c_id}`,
+            );
+            $comments = $comments.filter(v => v.id !== c_id)
+        } catch(e){
+            console.log(e);
+        }
+    }
 </script>
 
 {#if openTask && $task != null}
@@ -172,7 +212,7 @@
                 <iconify-icon icon="fluent-mdl2:save"/>
                 <p class="ml-2">Save</p>
             </button>
-            <button class="text-white text-4xl hover:bg-zinc-700 rounded-lg p-1" on:click={() => {openTask = false; task.set(null)}}>
+            <button class="text-white text-4xl hover:bg-zinc-700 rounded-lg p-1" on:click={() => {openTask = false; task.set(null); content = "";}}>
                 <iconify-icon icon="material-symbols:close"/>
             </button>
         </div>
@@ -266,6 +306,47 @@
                         </li>
                     {/each}
                 </ul>
+            </div>
+
+            <p class="w-full mt-4 text-white font-bold italic text-3xl text-center">Comments</p>
+            <div class="w-full flex flex-row justify-center items-start">
+                <div contenteditable="true" class="text-white text-lg font-serif rounded-3xl border-2 border-sky-600 w-10/12 py-2 px-4 mt-4" bind:innerText={content}></div>
+                <button class="mt-4 ml-2 text-sky-500 text-4xl items-center pt-1" on:click={() => writeComment($task.task.id)}>
+                    <iconify-icon icon="mdi:send-circle-outline"/>
+                </button>
+            </div>
+            <div class="w-full mt-4 flex flex-col justify-center">
+                {#each $comments as c}
+                    {#if c.person_id === $workspace.user.Id}
+                        <div class="flex flex-row justify-end items-start mt-2">
+                            <div contenteditable="false" class="text-white text-lg font-serif rounded-3xl border-2 border-sky-700 bg-sky-700 py-2 px-4">
+                                {c.content}
+                            </div>
+                            <button on:click={() => deleteComment($task.task.id, c.id)}>
+                                <iconify-icon icon="material-symbols:delete" class="text-red-600 text-3xl"/>
+                            </button>
+                        </div>
+                        <div class="flex flex-row justify-end">
+                            <p class="text-base text-white mr-4">You</p>
+                            <p class="text-base text-green-400">{c.created_at.slice(0,10)}</p>
+                        </div>
+                    {:else}
+                        <div class="flex flex-row justify-start items-start mt-2">
+                            {#if $workspace.isAdmin}
+                                <button on:click={() => deleteComment($task.task.id, c.id)}>
+                                    <iconify-icon icon="material-symbols:delete" class="text-red-600 text-3xl"/>
+                                </button>
+                            {/if}
+                            <div contenteditable="false" class="text-white text-lg font-serif rounded-3xl border-2 border-sky-700 bg-sky-700 py-2 px-4">
+                                {c.content}
+                            </div>
+                        </div>
+                        <div class="flex flex-row justify-start">
+                            <p class="text-base text-white mr-4">{c.person}</p>
+                            <p class="text-base text-green-400">{c.created_at.slice(0,10)}</p>
+                        </div>
+                    {/if}
+                {/each}
             </div>
         </div>
     </div>
