@@ -5,8 +5,6 @@
     import WorkspaceList from "../../lib/WorkspaceList.svelte";
 
     $: isLoggedIn = ($user === null | "" | " ")? false:true;
-    $: console.log("Is logged: ", isLoggedIn);
-    $: console.log("User: ", $user);
 </script>
 
 <div class="my-8 mx-12">

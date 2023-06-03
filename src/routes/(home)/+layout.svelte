@@ -15,7 +15,7 @@
 </script>
 
 <WorkspaceModal bind:show={showWsModal}/>
-<nav class="nav-bar">
+<nav class="nav-bar justify-center">
     <ul>
         <li class="inline-block">
             <a href="/login" class="home-href">LogIn</a>
@@ -23,6 +23,11 @@
         <li class="inline-block">
             <a href="/signup" class="home-href">SignUp</a>
         </li>
+        {#if isLoggedIn}
+            <li class="inline-block">
+                <a href="/personal?usr={$user}" class="home-href">Personal Tasks</a>
+            </li>
+        {/if}
     </ul>
 </nav>
 
