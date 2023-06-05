@@ -2,12 +2,13 @@
     import axios from "axios";
     import "../app.postcss";
     import 'iconify-icon';
+    import { workspace } from "../routes/workspace";
 
     import { createEventDispatcher } from 'svelte';
     const dispatch = createEventDispatcher();
 
     export let tasks = [];
-    export let gr = -1;
+    export let gr;
     //console.log("Задачи: ", tasks)
 
     let showTaskModal = false;
@@ -20,11 +21,6 @@
     let startAt = "";
     let finishAt = "";
     let currTask = -1;
-    const showModal = (id, i) =>{
-        currTask = i;
-        getTask(id);
-        showTaskModal = true;
-    }
     let getTask = async (id) =>{
         try{
             const resp = await fetch(`http://localhost:5192/task/${id}`, {
@@ -71,12 +67,15 @@
             console.log(e);
         }
     }
+    let moveTask = (id) =>{
+        dispatch('move', {id: id, gr: gr})
+    }
 
 </script>
 
 {#each tasks as task, i}
     <div class="flex flex-row items-start">
-        <div on:keyup on:click={() => dispatch('opentask', { id: task.id,})} class="flex flex-col w-80 rounded-md border-black border-2 p-2 my-2 bg-zinc-200 hover:bg-sky-100 shadow-xl">
+        <div on:keyup on:click={() => dispatch('opentask', { id: task.id})} class="flex flex-col w-80 rounded-md border-black border-2 p-2 my-2 bg-zinc-200 hover:bg-sky-100 shadow-xl">
             <div class="flex flex-row justify-between w-full">
                 <p class="font-serif font-bold italic text-base line-clamp-1 text-black">At: {task.createdAt}</p>
                 <p class="font-serif font-bold italic text-base line-clamp-1 text-black underline">{task.status}</p>
@@ -93,8 +92,15 @@
                 <iconify-icon icon="fluent:people-team-32-filled" class="text-2xl"/>
             </div>
         </div>
-        <button on:click={() => deleteTask(task.id)} class="px-1 bg-transparent hover:bg-slate-200 invisible group-hover:visible h-min">
-            <iconify-icon icon="material-symbols:delete-outline-rounded" class="text-2xl text-gray-600 mt-2"/>
-        </button>
+        <div class="flex flex-col">
+            <button on:click={() => deleteTask(task.id)} class="px-1 bg-transparent hover:bg-slate-200 invisible group-hover:visible h-min">
+                <iconify-icon icon="material-symbols:delete-outline-rounded" class="text-2xl text-gray-600 mt-2"/>
+            </button>
+            {#if $workspace.isAdmin}
+                <button class="px-1 bg-transparent hover:bg-slate-200 invisible group-hover:visible h-min" on:click={() => moveTask(task.id)}>
+                    <iconify-icon icon="ion:arrow-redo-sharp" class="text-2xl text-gray-600 mt-2"/>
+                </button>
+            {/if}
+        </div>
     </div>
 {/each}

@@ -94,7 +94,7 @@
                     </button>
                 </div>
             </div>
-            <TaskShow bind:tasks={gr.tasks} gr={gr.id} on:opentask/>
+            <TaskShow bind:tasks={gr.tasks} gr={gr.id} on:opentask on:move/>
         </div>
     {/each}
 </section>

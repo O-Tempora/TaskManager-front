@@ -16,7 +16,12 @@
     
     console.log($workspace)
 
-    let showPersonDropdown = false
+    let showMoveTask = false;
+    let taskToMove = -1;
+    let groupFrom = -1;
+    let selected;
+
+    let showPersonDropdown = false;
     let openTask = false;
     let openInfo = false;
     let content = "";
@@ -203,6 +208,30 @@
             console.log(e);
         }
     }
+
+    let openMove = (event) =>{
+        taskToMove = event.detail.id;
+        groupFrom = event.detail.gr;
+        showMoveTask = true;
+    }
+    let moveTask = async (id) =>{
+        showMoveTask = false;
+        try{
+            await axios.put(
+                `http://localhost:5192/task/${taskToMove}-to-${id}`,
+            );
+
+            let group_from_id = $workspace.data.groups.findIndex(v => v.id === groupFrom)
+            let group_to_id = $workspace.data.groups.findIndex(v => v.id === selected)
+            let task_index = $workspace.data.groups[group_from_id].tasks.findIndex(v => v.id === taskToMove)
+
+            const task = {... $workspace.data.groups[group_from_id].tasks[task_index]}
+            $workspace.data.groups[group_from_id].tasks = $workspace.data.groups[group_from_id].tasks.filter(v => v.id !== taskToMove)
+            $workspace.data.groups[group_to_id].tasks = [...$workspace.data.groups[group_to_id].tasks, task]
+        } catch(e){
+            console.log(e);
+        }
+    }
 </script>
 
 {#if openTask && $task != null}
@@ -362,9 +391,13 @@
             <iconify-icon icon="ep:info-filled" class="text-3xl"/>
             <p class="text-xl">Workspace Info</p>
         </button>
+        <button class="side-nav-button text-gray-400" on:click={() => openInfo = !openInfo}>
+            <iconify-icon icon="icomoon-free:exit" class="text-3xl pl-1"/>
+            <p class="text-xl">Exit Workspace</p>
+        </button>
         {#if $workspace.isAdmin}
             <button class="side-nav-button text-amber-400" on:click={() => ChangeWSStatus()}>
-                <iconify-icon icon="uiw:warning" class="text-2xl  px-1"/>
+                <iconify-icon icon="uiw:warning" class="text-2xl px-1"/>
                 <p class="text-xl text-end ">Make {#if $workspace.data.info.isActive}
                     Inactive
                 {:else}
@@ -377,9 +410,25 @@
             </button>
         {/if}
     </nav>
-    <Group bind:group={$workspace.data.groups} bind:ws_id={$workspace.data.info.id} on:opentask={showTask}/>
+    <Group bind:group={$workspace.data.groups} bind:ws_id={$workspace.data.info.id} on:opentask={showTask} on:move={openMove}/>
 </section>
 
 {#if openInfo}
     <WorkspaceInfo bind:info={$workspace.data.info} isAdmin={$workspace.isAdmin} on:close={closeInfo} on:save={SaveInfo}/>
+{/if}
+
+{#if showMoveTask && taskToMove !== -1}
+    <div class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 z-50" on:keyup on:click={() => {showMoveTask = false}}>
+        <div class="mx-auto my-52 max-w-sm bg-black rounded-lg shadow-xl p-4 flex flex-col items-start border-4 border-black" on:keyup on:click|stopPropagation>
+            <h2 class="w-full text-white font-extrabold text-center text-2xl p-2">Select group to move</h2>
+            <select class="bg-black text-white p-2" bind:value={selected}>
+                {#each $workspace.data.groups.filter(v => v.id !== groupFrom) as group}
+                    <option value={group.id} class="bg-black text-white">
+                        {group.name}
+                    </option>
+                {/each}
+            </select>
+            <button on:click={() => moveTask(selected)} class="p-2 bg-zinc-700 text-xl rounded-md hover:bg-zinc-500 text-white mt-4 w-full align-middle">Move</button>
+        </div>
+    </div>
 {/if}
