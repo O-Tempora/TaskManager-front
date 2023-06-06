@@ -8,6 +8,7 @@
     import { statuses } from "../statuses";
     import { persons } from "../persons";
     import { comments } from "../comments";
+    import { jwt } from "../jwt";
     import 'iconify-icon';
     import { fly } from 'svelte/transition';
     import { slide } from 'svelte/transition';
@@ -25,6 +26,13 @@
     let openTask = false;
     let openInfo = false;
     let content = "";
+
+    let showChooseNext = false;
+    let selectedPerson;
+
+    let showInvitation = false;
+    let emailToInvite;
+
     let changeDropdown = () =>{
         showPersonDropdown = !showPersonDropdown
     }
@@ -232,6 +240,51 @@
             console.log(e);
         }
     }
+
+    let leaveWS = async () => {
+        if ($workspace.isAdmin){
+            showChooseNext = true;
+            return
+        }
+        try{
+            await axios.delete(
+                `http://localhost:5192/person/${$workspace.user.Id}/${$workspace.data.info.id}`,
+            );
+            window.location.replace(`http://localhost:5173`);
+        } catch(e){
+            console.log(e);
+        }
+    }
+    let chooseNextAdminAndLeave = async (id) =>{
+        try{
+            await axios.delete(
+                `http://localhost:5192/person/${$workspace.user.Id}/${$workspace.data.info.id}?next=${id}`,
+            );
+            window.location.replace(`http://localhost:5173`);
+        } catch(e){
+            console.log(e);
+        }
+    }
+
+    let sendInvite = async() =>{
+        showInvitation = false
+        try{
+            await axios.post(
+                `http://localhost:5192/invite`,
+                {
+                    email: emailToInvite, 
+                    ws_id: $workspace.data.info.id
+                },
+                {
+                    headers:{
+                        "Authorization": "Bearer " + $jwt 
+                    }
+                }
+            );
+        } catch(e){
+            console.log(e);
+        }
+    }
 </script>
 
 {#if openTask && $task != null}
@@ -391,11 +444,15 @@
             <iconify-icon icon="ep:info-filled" class="text-3xl"/>
             <p class="text-xl">Workspace Info</p>
         </button>
-        <button class="side-nav-button text-gray-400" on:click={() => openInfo = !openInfo}>
+        <button class="side-nav-button text-gray-400" on:click={() => leaveWS()}>
             <iconify-icon icon="icomoon-free:exit" class="text-3xl pl-1"/>
             <p class="text-xl">Exit Workspace</p>
         </button>
         {#if $workspace.isAdmin}
+            <button class="side-nav-button text-lime-600" on:click={() => showInvitation = true}>
+                <iconify-icon icon="mdi:email-plus" class="text-3xl"/>
+                <p class="text-xl">Send Invitation</p>
+            </button>
             <button class="side-nav-button text-amber-400" on:click={() => ChangeWSStatus()}>
                 <iconify-icon icon="uiw:warning" class="text-2xl px-1"/>
                 <p class="text-xl text-end ">Make {#if $workspace.data.info.isActive}
@@ -419,16 +476,52 @@
 
 {#if showMoveTask && taskToMove !== -1}
     <div class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 z-50" on:keyup on:click={() => {showMoveTask = false}}>
-        <div class="mx-auto my-52 max-w-sm bg-black rounded-lg shadow-xl p-4 flex flex-col items-start border-4 border-black" on:keyup on:click|stopPropagation>
+        <div class="mx-auto my-52 max-w-sm bg-zinc-800 rounded-lg shadow-xl p-4 flex flex-col items-start border-4 border-black" on:keyup on:click|stopPropagation>
             <h2 class="w-full text-white font-extrabold text-center text-2xl p-2">Select group to move</h2>
-            <select class="bg-black text-white p-2" bind:value={selected}>
+            <select class="bg-zinc-800 text-white p-2" bind:value={selected}>
                 {#each $workspace.data.groups.filter(v => v.id !== groupFrom) as group}
                     <option value={group.id} class="bg-black text-white">
                         {group.name}
                     </option>
                 {/each}
             </select>
-            <button on:click={() => moveTask(selected)} class="p-2 bg-zinc-700 text-xl rounded-md hover:bg-zinc-500 text-white mt-4 w-full align-middle">Move</button>
+            <div class="flex flex-row w-full justify-around">
+                <button on:click={() => moveTask(selected)} class="p-2 bg-green-700 text-xl rounded-md hover:bg-green-800 text-white mt-4 align-middle w-40">Move</button>
+                <button on:click={() => showMoveTask = false} class="p-2 bg-red-700 text-xl rounded-md hover:bg-red-800 text-white mt-4 align-middle w-40">Back</button>
+            </div>
+        </div>
+    </div>
+{/if}
+
+{#if showChooseNext}
+    <div class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 z-50" on:keyup on:click={() => showChooseNext = false}>
+        <div class="mx-auto my-52 max-w-sm bg-zinc-800 rounded-lg shadow-xl px-6 py-8 flex flex-col items-start" on:keyup on:click|stopPropagation>
+            <h2 class="w-full text-white font-extrabold text-center text-2xl p-2">Choose the next administrator</h2>
+            <select class="bg-zinc-800 text-white p-2 text-lg my-4" bind:value={selectedPerson}>
+                {#each $persons.filter(v => v.id !== $workspace.user.Id) as p}
+                    <option value={p.id} class="bg-black text-white font-serif text-lg">
+                        {p.name}
+                    </option>
+                {/each}
+            </select>
+            <div class="flex flex-row w-full justify-around">
+                <button on:click={() => chooseNextAdminAndLeave(selectedPerson)} class="p-2 bg-green-700 text-xl rounded-md hover:bg-green-800 text-white mt-4 align-middle w-40">Accept</button>
+                <button on:click={() => showChooseNext = false} class="p-2 bg-red-700 text-xl rounded-md hover:bg-red-800 text-white mt-4 align-middle w-40">Decline</button>
+            </div>
+        </div>
+    </div>
+{/if}
+
+{#if showInvitation}
+    <div class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 z-50" on:keyup on:click={() => showInvitation = false}>
+        <div class="mx-auto my-52 max-w-sm bg-zinc-800 rounded-lg shadow-xl px-6 py-8 flex flex-col items-start" on:keyup on:click|stopPropagation>
+            <h2 class="w-full text-white font-extrabold text-center text-3xl p-2">Send Invitation</h2>
+            <label for="emailField" class="text-xl text-white font-serif mt-4 mb-2">Email of Invitee:</label>
+            <input id="emailField" type="email" class="bg-zinc-700 text-xl p-2 text-white rounded-md" bind:value={emailToInvite}/>
+            <div class="flex flex-row w-full justify-around mt-4">
+                <button on:click={() => sendInvite()} class="p-2 bg-green-700 text-xl rounded-md hover:bg-green-800 text-white mt-4 align-middle w-40">Send</button>
+                <button on:click={() => showInvitation = false} class="p-2 bg-red-700 text-xl rounded-md hover:bg-red-800 text-white mt-4 align-middle w-40">Decline</button>
+            </div>
         </div>
     </div>
 {/if}

@@ -3,6 +3,9 @@
     import axios from "axios";
     import user from "../store";
     import { creds } from "../creds"
+    import { fly } from 'svelte/transition';
+    import { createEventDispatcher } from "svelte"
+    import Invitations from "../../lib/Invitations.svelte";
 
     $: isLoggedIn = ($user === null)? false:true;
 
@@ -24,10 +27,15 @@
         }
     }
     let getp = getPerson()
+
+    let showInvites = false;
+    let closeInv = () =>{
+        showInvites = false
+    }
 </script>
 
 <nav class="nav-bar justify-center">
-    <ul>
+    <ul class="h-full">
         <li class="inline-block">
             <a href="/login" class="home-href">LogIn</a>
         </li>
@@ -47,7 +55,17 @@
                     </li>
                 {/if}
             {/await}
+            <li class="inline-block h-full">
+                <button class="text-white font-serif text-xl font-semibold px-4 hover:bg-slate-800 items-center" on:click={()=> showInvites = true}>
+                    Invitations
+                </button>
+            </li>
         {/if}
     </ul>
 </nav>
+
+{#if showInvites}
+    <Invitations bind:user={$user} on:close={closeInv}/>
+{/if}
+
 <slot/>

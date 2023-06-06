@@ -50,7 +50,6 @@ export async function load ({ fetch, params, url }){
     statuses.set(stat);
     persons.set(prsns);
 
-
     return {
         data: data,
         isAdmin: isAdmin,
