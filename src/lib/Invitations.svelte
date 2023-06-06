@@ -4,6 +4,7 @@
     import { fly } from 'svelte/transition';
     import { createEventDispatcher } from "svelte"
     import { invites } from "../routes/invites"
+    import { wsList } from '../routes/wsList';
     export let user
 
     const dispatch = createEventDispatcher();
@@ -27,19 +28,23 @@
             console.log(e)
         }
     }
-    let gi = getInvitations()
+    let gi = getInvitations();
 
-    let accept = async(id, ws)=>{
+    let accept = async (id, ws) =>{
         try{
-            await axios.post(
-                `http://localhost:5192/invite/${id}/${ws}`,
+            console.log(id, ws)
+            const res = await axios.post(
+                `http://localhost:5192/invite/${id}/${ws}`,{},
                 {
                     headers:{
                         "Authorization": "Bearer " + user 
                     }
                 }
             );
+            const resp = res.data
+            console.log(resp)
             $invites = $invites.filter(v => v.id !== id)
+            $wsList = [... $wsList, resp]
         } catch(e){
             console.log(e);
         }
