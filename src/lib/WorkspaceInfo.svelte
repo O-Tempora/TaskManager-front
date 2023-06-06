@@ -56,10 +56,10 @@
         </p>
     </div>
 
-    {#if !info.isActive && info.closed_at != null}
+    {#if !info.isActive && info.closed_at !== null}
         <div class="flex flex-row w-full content-start">
             <p class="text-2xl text-red-400 text-start overflow-auto mt-2 ml-2">Closed at: </p>
-            <p class="text-2xl text-white text-start overflow-auto mt-2 ml-2">{info.closed_at.toDateString()}</p>
+            <p class="text-2xl text-white text-start overflow-auto mt-2 ml-2">{info.closed_at === null? "" : info.closed_at.slice(0,10)}</p>
         </div>
     {/if}
 </div>

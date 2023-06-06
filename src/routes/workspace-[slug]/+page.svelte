@@ -12,6 +12,7 @@
     import 'iconify-icon';
     import { fly } from 'svelte/transition';
     import { slide } from 'svelte/transition';
+    import TeamList from "../../lib/TeamList.svelte";
 
     //export let data;
     
@@ -32,6 +33,8 @@
 
     let showInvitation = false;
     let emailToInvite;
+
+    let showTeam = false;
 
     let changeDropdown = () =>{
         showPersonDropdown = !showPersonDropdown
@@ -158,7 +161,8 @@
                 i
             );
             $workspace.data.info.isActive = i.isActive
-            $workspace.data.info.closed_at = i.closed_at
+            $workspace.data.info.closed_at = i.closed_at.toISOString()
+            console.log("Через страницу ", $workspace.data.info)
         } catch(e){
             console.log(e);
         }
@@ -171,6 +175,9 @@
                 `http://localhost:5192/workspace/${$workspace.data.info.id}`,
                 i
             );
+            $workspace.data.info.isActive = i.isActive
+            $workspace.data.info.closed_at = i.closed_at.toISOString()
+            console.log("Через окно ws ",$workspace.data.info)
         } catch(e){
             console.log(e);
         }
@@ -284,6 +291,10 @@
         } catch(e){
             console.log(e);
         }
+    }
+
+    let closeTeam = () => {
+        showTeam = false
     }
 </script>
 
@@ -444,6 +455,10 @@
             <iconify-icon icon="ep:info-filled" class="text-3xl"/>
             <p class="text-xl">Workspace Info</p>
         </button>
+        <button class="side-nav-button text-gray-400" on:click={() => showTeam = !showTeam}>
+            <iconify-icon icon="fluent:people-team-24-filled" class="text-3xl"/>
+            <p class="text-xl">Team</p>
+        </button>
         <button class="side-nav-button text-gray-400" on:click={() => leaveWS()}>
             <iconify-icon icon="icomoon-free:exit" class="text-3xl pl-1"/>
             <p class="text-xl">Exit Workspace</p>
@@ -472,6 +487,10 @@
 
 {#if openInfo}
     <WorkspaceInfo bind:info={$workspace.data.info} isAdmin={$workspace.isAdmin} on:close={closeInfo} on:save={SaveInfo}/>
+{/if}
+
+{#if showTeam}
+    <TeamList bind:team={$persons} isAdmin={$workspace.isAdmin} you={$workspace.user.Id} ws={$workspace.data.info.id} on:close={closeTeam}/>
 {/if}
 
 {#if showMoveTask && taskToMove !== -1}
