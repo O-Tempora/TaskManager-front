@@ -22,7 +22,7 @@
 
 {#if show}
     <div class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 z-50" on:keyup on:click={() => close()}>
-        <div class="mx-auto my-52 max-w-sm bg-[#1e3d59] rounded-lg shadow-xl p-4 flex flex-col items-start border-4 border-black" on:keyup on:click|stopPropagation>
+        <div class="mx-auto my-52 max-w-sm bg-slate-900 rounded-lg shadow-xl p-4 flex flex-col items-start border-4 border-black" on:keyup on:click|stopPropagation>
             <h2 class="w-full text-[#ffc13b] font-extrabold text-center text-2xl p-2">Edit Group</h2>
             <label for="newName" class="text-xl text-[#ff6e40] font-bold py-2">Name:</label>
             <input type="text" id="newName" bind:value={name} class="bg-[#F1EAD4] text-[#1e3d59] text-xl rounded-lg p-2">

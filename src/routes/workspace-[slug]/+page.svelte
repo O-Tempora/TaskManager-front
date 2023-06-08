@@ -64,6 +64,8 @@
             task.set(data);
             comments.set(cm)
 
+            console.log("Таск при получении: ", $task)
+
             return data;
         } catch(e){
             console.log(e)
@@ -72,8 +74,16 @@
     let saveTask = async () => {
         content = "";
         let t = {... $task}; //copy object
-        t.task.startAt = new Date(parseInt(t.task.startAt.slice(0, 4)), parseInt(t.task.startAt.slice(5, 7)) - 1, parseInt(t.task.startAt.slice(8)));
-        t.task.finishAt = new Date(parseInt(t.task.finishAt.slice(0, 4)), parseInt(t.task.finishAt.slice(5, 7)) - 1, parseInt(t.task.finishAt.slice(8)));
+
+        t.task.startAt = new Date(parseInt(t.task.startAt.slice(0, 4)), parseInt(t.task.startAt.slice(5, 7)) - 1, parseInt(t.task.startAt.slice(8, 10)) + 1).toISOString();
+        t.task.finishAt = new Date(parseInt(t.task.finishAt.slice(0, 4)), parseInt(t.task.finishAt.slice(5, 7)) - 1, parseInt(t.task.finishAt.slice(8, 10)) + 1).toISOString();
+        console.log(t.task)
+        if ($task.task.status !== "Done"){
+            t.task.endDate = null
+        } else{
+            t.task.endDate = $task.task.endDate === null? new Date():$task.task.endDate
+        }
+
         try{
             await axios.put(
                 `http://localhost:5192/task/${t.task.id}`,
@@ -86,8 +96,18 @@
                 createdAt: $workspace.data.groups[group].tasks[tsk].createdAt,
                 description: $task.task.description,
                 status: $task.task.status,
-                persons: $task.persons
+                persons: [...$task.persons],
+                endDate: t.task.endDate === null? null : typeof t.task.endDate === 'string' || t.task.endDate instanceof String? t.task.endDate:t.task.endDate.toISOString()
             }
+
+            // console.log($task.task.startAt.format("yyyy-MM-ddThh:mm:ss"))
+            // console.log($task.task.finishAt.format("yyyy-MM-ddThh:mm:ss"))
+
+            $task.task.endDate = t.task.endDate === null? null : typeof t.task.endDate === 'string' || t.task.endDate instanceof String? t.task.endDate:t.task.endDate.toISOString()
+            $task.task.startAt = t.task.startAt.slice(0,10)
+            $task.task.finishAt = t.task.finishAt.slice(0,10)
+
+
         } catch(e){
             console.log(e)
         }
@@ -309,9 +329,16 @@
                 <iconify-icon icon="material-symbols:close"/>
             </button>
         </div>
-        <div class="px-4 w-full">
-            <div class="text-gray-100 text-right text-lg font-bold">
-                Created: {$task.task.createdAt.slice(0,10)}
+        <div class="px-4 w-full mt-4 mb-2">
+            <div class="flex flex-row justify-between">
+                <div class="text-gray-100 text-right text-lg font-bold">
+                    Created: {$task.task.createdAt.slice(0,10)}
+                </div>
+                {#if $task.task.endDate !== null}
+                    <div class="text-lime-400 text-center text-lg font-bold">
+                        Done: {$task.task.endDate.slice(0,10)}
+                    </div>
+                {/if}
             </div>
             {#if $workspace.isAdmin}
                 <div contenteditable="true" class="text-white text-2xl font-serif my-2 p-2 rounded-lg border-2 border-stone-500" bind:textContent={$task.task.description}></div>

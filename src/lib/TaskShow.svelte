@@ -9,7 +9,7 @@
 
     export let tasks = [];
     export let gr;
-    //console.log("Задачи: ", tasks)
+    console.log("Задачи: ", tasks)
 
     let showTaskModal = false;
     const close = () =>{
@@ -81,6 +81,9 @@
                 <p class="font-serif font-bold italic text-base line-clamp-1 text-black underline">{task.status}</p>
             </div>
             <p class="font-serif font-medium text-lg line-clamp-6 py-1">{task.description}</p>
+            {#if task.endDate !== null}
+                <p class="font-serif font-bold italic text-base line-clamp-1 text-lime-700 my-1">Done: {task.endDate.slice(0,10)}</p>
+            {/if}
             <div class="w-full flex flex-row justify-between border-2 border-transparent border-t-[#1e3d59]">
                 <ul class="w-full">
                     {#each task.persons as person}

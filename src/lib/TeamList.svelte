@@ -13,6 +13,8 @@
         dispatch('close');
     }
 
+    console.log(team)
+
     let removePerson = async (id) =>{
         try{
             await axios.delete(
@@ -37,25 +39,28 @@
     <div class="flex flex-col w-full content-start my-4 mt-8">
         {#each team as p}
             <div class="flex flex-row justify-start items-center p-2 mx-8">
-                {#if isAdmin}
-                    <div class="w-full flex flex-row justify-between">
-                        <p class="text-center text-2xl font-bold text-amber-400">
+                <div class="w-full flex flex-row justify-between">
+                    {#if p.role === "Admin"}
+                        <p class="text-center text-2xl font-extrabold text-amber-400">
                             {p.name} (Admin)
                             {#if you === p.id}
                                 <span class="text-center text-2xl font-bold text-sky-500"> - you</span>
                             {/if}
                         </p>
-                        {#if p.id !== you}
-                            <button class="text-red-600 text-4xl hover:bg-zinc-700 rounded-lg mx-2" on:click={() => removePerson(p.id)}>
-                                <iconify-icon icon="dashicons:no"/>
-                            </button>
-                        {/if}
-                    </div>
-                {:else if you === p.id}
-                    <p class="text-center text-sky-500 text-2xl">{p.name} - you</p>
-                {:else}
-                    <p class="text-center text-white text-2xl">{p.name}</p>
-                {/if}
+                    {:else}
+                        <p class="text-center text-2xl font-bold text-white">
+                            {p.name}
+                            {#if you === p.id}
+                                <span class="text-center text-2xl font-bold text-sky-500"> - you</span>
+                            {/if}
+                        </p>
+                    {/if}
+                    {#if isAdmin && p.id !== you}
+                        <button class="text-red-600 text-4xl hover:bg-zinc-700 rounded-lg mx-2" on:click={() => removePerson(p.id)}>
+                            <iconify-icon icon="dashicons:no"/>
+                        </button>
+                    {/if}
+                </div>
             </div>
         {/each}
     </div>
