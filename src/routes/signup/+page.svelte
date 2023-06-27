@@ -22,7 +22,7 @@
             }
          )
          .then((res)=>{
-            if(res.status == 201){
+            if(res.status == 200){
                 //return res.data;
                 console.log("Signed up successfully");
                 console.log(res);

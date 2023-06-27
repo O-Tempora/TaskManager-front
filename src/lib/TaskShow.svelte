@@ -9,6 +9,7 @@
 
     export let tasks = [];
     export let gr;
+    export let isAdmin;
     console.log("Задачи: ", tasks)
 
     let showTaskModal = false;
@@ -71,13 +72,24 @@
         dispatch('move', {id: id, gr: gr})
     }
 
+    let isLate = (date, done) => {
+        if (done != null){
+            return false
+        }
+        return new Date() > Date.parse(date)
+    }
+
 </script>
 
 {#each tasks as task, i}
     <div class="flex flex-row items-start">
         <div on:keyup on:click={() => dispatch('opentask', { id: task.id})} class="flex flex-col w-80 rounded-md border-black border-2 p-2 my-2 bg-zinc-200 hover:bg-sky-100 shadow-xl">
             <div class="flex flex-row justify-between w-full">
-                <p class="font-serif font-bold italic text-base line-clamp-1 text-black">At: {task.createdAt}</p>
+                {#if !isLate(task.finishAt, task.endDate)}
+                    <p class="font-serif font-bold text-lg line-clamp-1 text-black">At: {task.finishAt}</p>
+                {:else}
+                    <p class="font-serif font-bold text-lg line-clamp-1 text-red-600">At: {task.finishAt}</p>
+                {/if}
                 <p class="font-serif font-bold italic text-base line-clamp-1 text-black underline">{task.status}</p>
             </div>
             <p class="font-serif font-medium text-lg line-clamp-6 py-1">{task.description}</p>
@@ -96,14 +108,14 @@
             </div>
         </div>
         <div class="flex flex-col">
-            <button on:click={() => deleteTask(task.id)} class="px-1 bg-transparent hover:bg-slate-200 invisible group-hover:visible h-min">
-                <iconify-icon icon="material-symbols:delete-outline-rounded" class="text-2xl text-gray-600 mt-2"/>
-            </button>
-            {#if $workspace.isAdmin}
-                <button class="px-1 bg-transparent hover:bg-slate-200 invisible group-hover:visible h-min" on:click={() => moveTask(task.id)}>
-                    <iconify-icon icon="ion:arrow-redo-sharp" class="text-2xl text-gray-600 mt-2"/>
+            {#if isAdmin}
+                <button on:click={() => deleteTask(task.id)} class="px-1 bg-transparent hover:bg-slate-200 invisible group-hover:visible h-min">
+                    <iconify-icon icon="material-symbols:delete-outline-rounded" class="text-2xl text-gray-600 mt-2"/>
                 </button>
             {/if}
+            <button class="px-1 bg-transparent hover:bg-slate-200 invisible group-hover:visible h-min" on:click={() => moveTask(task.id)}>
+                <iconify-icon icon="ion:arrow-redo-sharp" class="text-2xl text-gray-600 mt-2"/>
+            </button>
         </div>
     </div>
 {/each}

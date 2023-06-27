@@ -73,7 +73,7 @@
         </button>
     </div>
 
-    <p class="w-full text-4xl text-white text-center overflow-auto mt-4">Invitations</p>
+    <p class="w-full text-4xl text-lime-200 text-center overflow-auto mt-4">Invitations</p>
 
     <div class="min-w-[600px] max-w-[600px] flex flex-col justify-center mt-4">
         {#await gi}

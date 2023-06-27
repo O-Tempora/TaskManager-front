@@ -370,25 +370,20 @@
             </div>
             <div class="flex flex-row w-full justify-start mt-2">
                 <p class="text-xl text-white font-bold py-2">Status:</p>
-                {#if $workspace.isAdmin}     
-                    <select bind:value={$task.task.status} class="ml-4 rounded-md bg-zinc-900 text-white px-2 text-lg">
-                        {#each $statuses as status}
-                            <option value={status.name}>{status.name}</option>
-                        {/each}
-                    </select>
-                {:else}
-                     <p class="ml-4 rounded-md bg-zinc-700 text-white px-2 text-lg">{$task.task.status}</p>
-                {/if}
+                <select bind:value={$task.task.status} class="ml-4 rounded-md bg-zinc-900 text-white px-2 text-lg">
+                    {#each $statuses as status}
+                        <option value={status.name}>{status.name}</option>
+                    {/each}
+                </select>
             </div>
             <div>
                 <div class="flex flex-row w-full content-start mt-4 overflow-visible static">
                     <p class="text-white font-bold italic text-3xl">Assigned</p>
-                    {#if $task.persons.findIndex(v => v.id === $workspace.user.Id) === -1
-                    }
+                    {#if $task.persons.findIndex(v => v.id === $workspace.user.Id) === -1}
                         <button class="text-green-500 text-4xl hover:bg-zinc-700 rounded-lg p-1 mx-4" on:click={selfAssign}>
                             <iconify-icon icon="iconamoon:do-redo"/>
                         </button>
-                    {:else}
+                    {:else if $workspace.isAdmin}
                         <button class="text-red-500 text-4xl hover:bg-zinc-700 rounded-lg p-1 mx-4" on:click={selfDismiss}>
                             <iconify-icon icon="iconamoon:do-undo-fill"/>
                         </button>
@@ -457,7 +452,7 @@
                                     <iconify-icon icon="material-symbols:delete" class="text-red-600 text-3xl"/>
                                 </button>
                             {/if}
-                            <div contenteditable="false" class="text-white text-lg font-serif rounded-3xl border-2 border-sky-700 bg-sky-700 py-2 px-4">
+                            <div contenteditable="false" class="text-white text-lg font-serif rounded-3xl border-2 border-zinc-600 bg-zinc-600 py-2 px-4">
                                 {c.content}
                             </div>
                         </div>
@@ -509,7 +504,7 @@
             </button>
         {/if}
     </nav>
-    <Group bind:group={$workspace.data.groups} bind:ws_id={$workspace.data.info.id} on:opentask={showTask} on:move={openMove}/>
+    <Group bind:group={$workspace.data.groups} bind:ws_id={$workspace.data.info.id} bind:isAdmin={$workspace.isAdmin} on:opentask={showTask} on:move={openMove}/>
 </section>
 
 {#if openInfo}

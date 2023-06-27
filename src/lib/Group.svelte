@@ -10,6 +10,7 @@
 
     export let group = [];
     export let ws_id;
+    export let isAdmin;
 
     let showGroupModal = false;
     let currGroup = 0;
@@ -89,12 +90,14 @@
                     <button on:click={() => createTask(gr.id, i)} class="px-1 bg-transparent hover:bg-slate-200 invisible group-hover:visible">
                         <iconify-icon icon="material-symbols:add-box-outline" class="text-2xl text-gray-600 mt-1"/>
                     </button>
-                    <button on:click={() => deleteGroup(gr.id)} class="px-1 bg-transparent hover:bg-slate-200 invisible group-hover:visible">
-                        <iconify-icon icon="material-symbols:delete-forever-sharp" class="text-2xl text-gray-600 mt-1"/>
-                    </button>
+                    {#if isAdmin}
+                        <button on:click={() => deleteGroup(gr.id)} class="px-1 bg-transparent hover:bg-slate-200 invisible group-hover:visible">
+                            <iconify-icon icon="material-symbols:delete-forever-sharp" class="text-2xl text-gray-600 mt-1"/>
+                        </button>
+                    {/if}
                 </div>
             </div>
-            <TaskShow bind:tasks={gr.tasks} gr={gr.id} on:opentask on:move/>
+            <TaskShow bind:tasks={gr.tasks} gr={gr.id} bind:isAdmin={isAdmin} on:opentask on:move/>
         </div>
     {/each}
 </section>

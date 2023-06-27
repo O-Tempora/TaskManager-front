@@ -15,7 +15,7 @@
                             {#each group.tasks as task}
                                 <div class="personal-div">
                                     <div class="w-full flex flex-row justify-between px-4 py-2">
-                                        <p class="line-clamp-1 text-black font-bold font-serif">{task.createdAt.slice(0, 10)}</p>
+                                        <p class="line-clamp-1 text-black font-bold font-serif">{task.finishAt.slice(0, 10)}</p>
                                         <p class="line-clamp-4 text-black break-all font-extrabold text-l font-serif">{task.status}</p>
                                     </div>
                                     <p class="px-4 py-2 line-clamp-4 text-lg text-stone-900 w-full font-serif">{task.description}</p>
@@ -24,7 +24,7 @@
                                             <span class="text-green-700">{task.startAt.slice(0, 10)}</span> -- <span class="text-red-700">{task.finishAt.slice(0, 10)}</span>
                                         </p>
                                     </div>
-                                    {#if new Date(task.finishAt) < new Date()}
+                                    {#if new Date(task.finishAt) < new Date() && task.endDate === null}
                                         <p class="text-red-700 break-all font-extrabold text-lg font-serif mx-4 mb-2">LATE</p>
                                     {/if}
                                 </div>
